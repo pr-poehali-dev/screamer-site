@@ -40,42 +40,203 @@ const Index = () => {
     }
   }, []);
 
-  const playScreamSound = async () => {
+  const playHorrorSound = async (soundType: 'skull' | 'ghost' | 'demon') => {
     if (!audioContext) return;
     
     try {
-      // Create a simple scream-like sound using oscillators
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
+      const now = audioContext.currentTime;
       
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      // Scream-like frequency modulation
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.1);
-      oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.3);
-      
-      // Volume envelope
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.1, audioContext.currentTime + 0.3);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-      
-      oscillator.type = 'sawtooth';
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
+      if (soundType === 'skull') {
+        // Bone-chilling death scream with distortion
+        const osc1 = audioContext.createOscillator();
+        const osc2 = audioContext.createOscillator();
+        const osc3 = audioContext.createOscillator();
+        const gain1 = audioContext.createGain();
+        const gain2 = audioContext.createGain();
+        const gain3 = audioContext.createGain();
+        const masterGain = audioContext.createGain();
+        
+        // Connect all oscillators
+        osc1.connect(gain1);
+        osc2.connect(gain2);
+        osc3.connect(gain3);
+        gain1.connect(masterGain);
+        gain2.connect(masterGain);
+        gain3.connect(masterGain);
+        masterGain.connect(audioContext.destination);
+        
+        // Death scream frequencies
+        osc1.frequency.setValueAtTime(150, now);
+        osc1.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+        osc1.frequency.exponentialRampToValueAtTime(100, now + 0.8);
+        
+        osc2.frequency.setValueAtTime(300, now);
+        osc2.frequency.exponentialRampToValueAtTime(1200, now + 0.15);
+        osc2.frequency.exponentialRampToValueAtTime(80, now + 0.9);
+        
+        osc3.frequency.setValueAtTime(60, now);
+        osc3.frequency.exponentialRampToValueAtTime(200, now + 0.2);
+        
+        // Harsh waveforms
+        osc1.type = 'sawtooth';
+        osc2.type = 'square';
+        osc3.type = 'triangle';
+        
+        // Volume envelopes for terror
+        masterGain.gain.setValueAtTime(0, now);
+        masterGain.gain.exponentialRampToValueAtTime(0.6, now + 0.01);
+        masterGain.gain.exponentialRampToValueAtTime(0.4, now + 0.3);
+        masterGain.gain.exponentialRampToValueAtTime(0.8, now + 0.5);
+        masterGain.gain.exponentialRampToValueAtTime(0.01, now + 1.2);
+        
+        osc1.start(now);
+        osc2.start(now + 0.05);
+        osc3.start(now);
+        osc1.stop(now + 1.2);
+        osc2.stop(now + 1.2);
+        osc3.stop(now + 1.2);
+        
+      } else if (soundType === 'ghost') {
+        // Ethereal whisper turning into banshee wail
+        const osc = audioContext.createOscillator();
+        const filter = audioContext.createBiquadFilter();
+        const gain = audioContext.createGain();
+        const tremolo = audioContext.createOscillator();
+        const tremoloGain = audioContext.createGain();
+        
+        osc.connect(filter);
+        filter.connect(gain);
+        tremolo.connect(tremoloGain);
+        tremoloGain.connect(gain.gain);
+        gain.connect(audioContext.destination);
+        
+        // Ghostly frequencies
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.5);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 1.0);
+        osc.frequency.exponentialRampToValueAtTime(440, now + 1.5);
+        
+        // Ethereal filter sweep
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(200, now);
+        filter.frequency.exponentialRampToValueAtTime(2000, now + 0.8);
+        filter.frequency.exponentialRampToValueAtTime(100, now + 1.8);
+        filter.Q.setValueAtTime(15, now);
+        
+        // Tremolo effect
+        tremolo.frequency.setValueAtTime(8, now);
+        tremoloGain.gain.setValueAtTime(0.3, now);
+        
+        osc.type = 'sine';
+        tremolo.type = 'sine';
+        
+        // Haunting volume envelope
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.exponentialRampToValueAtTime(0.2, now + 0.3);
+        gain.gain.exponentialRampToValueAtTime(0.5, now + 1.0);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 2.0);
+        
+        osc.start(now);
+        tremolo.start(now);
+        osc.stop(now + 2.0);
+        tremolo.stop(now + 2.0);
+        
+      } else if (soundType === 'demon') {
+        // Deep demonic growl with hellish overtones
+        const fundamental = audioContext.createOscillator();
+        const subharmonic = audioContext.createOscillator();
+        const harmonic1 = audioContext.createOscillator();
+        const harmonic2 = audioContext.createOscillator();
+        const noise = audioContext.createOscillator();
+        
+        const distortion = audioContext.createWaveShaper();
+        const filter = audioContext.createBiquadFilter();
+        const masterGain = audioContext.createGain();
+        
+        // Create distortion curve
+        const samples = 44100;
+        const curve = new Float32Array(samples);
+        const deg = Math.PI / 180;
+        for (let i = 0; i < samples; i++) {
+          const x = (i * 2) / samples - 1;
+          curve[i] = ((3 + 50) * x * 20 * deg) / (Math.PI + 50 * Math.abs(x));
+        }
+        distortion.curve = curve;
+        distortion.oversample = '4x';
+        
+        // Connect the hellish chain
+        fundamental.connect(distortion);
+        subharmonic.connect(distortion);
+        harmonic1.connect(distortion);
+        harmonic2.connect(distortion);
+        noise.connect(distortion);
+        distortion.connect(filter);
+        filter.connect(masterGain);
+        masterGain.connect(audioContext.destination);
+        
+        // Demonic frequencies
+        fundamental.frequency.setValueAtTime(66, now); // Hell frequency
+        subharmonic.frequency.setValueAtTime(33, now);
+        harmonic1.frequency.setValueAtTime(132, now);
+        harmonic2.frequency.setValueAtTime(198, now);
+        noise.frequency.setValueAtTime(13, now);
+        
+        // Frequency modulation for growling
+        fundamental.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+        fundamental.frequency.exponentialRampToValueAtTime(50, now + 0.8);
+        fundamental.frequency.exponentialRampToValueAtTime(80, now + 1.5);
+        
+        // Demonic waveforms
+        fundamental.type = 'sawtooth';
+        subharmonic.type = 'square';
+        harmonic1.type = 'triangle';
+        harmonic2.type = 'sawtooth';
+        noise.type = 'sawtooth';
+        
+        // Dark filter
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(300, now);
+        filter.frequency.exponentialRampToValueAtTime(150, now + 1.5);
+        filter.Q.setValueAtTime(10, now);
+        
+        // Hell's volume envelope
+        masterGain.gain.setValueAtTime(0, now);
+        masterGain.gain.exponentialRampToValueAtTime(0.4, now + 0.1);
+        masterGain.gain.exponentialRampToValueAtTime(0.7, now + 0.5);
+        masterGain.gain.exponentialRampToValueAtTime(0.3, now + 1.0);
+        masterGain.gain.exponentialRampToValueAtTime(0.01, now + 1.8);
+        
+        fundamental.start(now);
+        subharmonic.start(now);
+        harmonic1.start(now + 0.1);
+        harmonic2.start(now + 0.2);
+        noise.start(now);
+        
+        fundamental.stop(now + 1.8);
+        subharmonic.stop(now + 1.8);
+        harmonic1.stop(now + 1.8);
+        harmonic2.stop(now + 1.8);
+        noise.stop(now + 1.8);
+      }
       
       setIsPlaying(true);
-      setTimeout(() => setIsPlaying(false), 500);
+      setTimeout(() => setIsPlaying(false), 2000);
     } catch (error) {
-      console.error('Audio playback failed:', error);
+      console.error('Horror audio failed:', error);
     }
   };
 
   const handleScreamerClick = (id: number) => {
     setSelectedScreamer(id);
-    playScreamSound();
+    
+    // Play different sound based on screamer type
+    if (id === 1) {
+      playHorrorSound('skull');
+    } else if (id === 2) {
+      playHorrorSound('ghost');
+    } else if (id === 3) {
+      playHorrorSound('demon');
+    }
     
     // Hide after 3 seconds
     setTimeout(() => {
